@@ -6,9 +6,7 @@
 # Gradle build files
 /.gradle/
 /build/
-src/main/resources/docs/
-.gradle/
-daemon/**
+/src/main/resources/docs/
 /daemon/**
 
 
