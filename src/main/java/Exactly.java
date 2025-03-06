@@ -88,9 +88,13 @@ public class Exactly {
                 break;
             } else if (input.equals("list")) {
                 System.out.println("____________________________________________________________");
-                System.out.println(" Here are the tasks in your list:");
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + "." + tasks[i]);
+                if (taskCount == 0) {
+                    System.out.println(" Wow, your task list is empty! Let's get started and add some awesome tasks!");
+                } else {
+                    System.out.println(" Here are the tasks in your list:");
+                    for (int i = 0; i < taskCount; i++) {
+                        System.out.println(" " + (i + 1) + "." + tasks[i]);
+                    }
                 }
                 System.out.println("____________________________________________________________");
             } else if (input.startsWith("mark ")) {
@@ -98,7 +102,7 @@ public class Exactly {
                     int index = Integer.parseInt(input.substring(5).trim());
                     if (index < 1 || index > taskCount) {
                         System.out.println("____________________________________________________________");
-                        System.out.println(" Whoops! That task number doesn't exist! Check and try again!");
+                        System.out.println(" Huh? That task number doesn't exist! Check and try again!");
                         System.out.println("____________________________________________________________");
                     } else {
                         tasks[index - 1].markAsDone();
@@ -131,11 +135,11 @@ public class Exactly {
                     System.out.println(" Seriously? You need to provide a valid task number after 'unmark'!");
                     System.out.println("____________________________________________________________");
                 }
-            } else if (input.startsWith("todo ")) {
-                String description = input.substring(5).trim();
+            } else if (input.startsWith("todo")) {
+                String description = input.equals("todo") ? "" : input.substring(4).trim();
                 if (description.isEmpty()) {
                     System.out.println("____________________________________________________________");
-                    System.out.println(" Hey, don't leave the task empty! Tell me what to do!");
+                    System.out.println(" Huh? The description for a todo task cannot be empty! Please give me a proper task!");
                     System.out.println("____________________________________________________________");
                 } else {
                     tasks[taskCount++] = new Todo(description);
@@ -145,12 +149,12 @@ public class Exactly {
                     System.out.println(" Now you have " + taskCount + " tasks in the list!");
                     System.out.println("____________________________________________________________");
                 }
-            } else if (input.startsWith("deadline ")) {
-                String details = input.substring(9).trim();
+            } else if (input.startsWith("deadline")) {
+                String details = input.equals("deadline") ? "" : input.substring(8).trim();
                 String[] parts = details.split(" /by ");
-                if (parts.length != 2) {
+                if (details.isEmpty() || parts.length != 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
                     System.out.println("____________________________________________________________");
-                    System.out.println(" Hmm... I need a description and a deadline separated by ' /by '! Try again!");
+                    System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <time>");
                     System.out.println("____________________________________________________________");
                 } else {
                     tasks[taskCount++] = new Deadline(parts[0].trim(), parts[1].trim());
@@ -160,20 +164,19 @@ public class Exactly {
                     System.out.println(" Now you have " + taskCount + " tasks in the list!");
                     System.out.println("____________________________________________________________");
                 }
-            } else if (input.startsWith("event ")) {
-                String details = input.substring(6).trim();
-                // Expecting format: <description> /from <start> /to <end>
+            } else if (input.startsWith("event")) {
+                String details = input.equals("event") ? "" : input.substring(5).trim();
                 String[] partsFrom = details.split(" /from ");
-                if (partsFrom.length != 2) {
+                if (details.isEmpty() || partsFrom.length != 2 || partsFrom[0].trim().isEmpty()) {
                     System.out.println("____________________________________________________________");
-                    System.out.println(" Uh-oh! The event command should have a description and a time period separated by ' /from '!");
+                    System.out.println(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>");
                     System.out.println("____________________________________________________________");
                 } else {
                     String description = partsFrom[0].trim();
                     String[] partsTo = partsFrom[1].split(" /to ");
-                    if (partsTo.length != 2) {
+                    if (partsTo.length != 2 || partsTo[0].trim().isEmpty() || partsTo[1].trim().isEmpty()) {
                         System.out.println("____________________________________________________________");
-                        System.out.println(" You missed the ' /to ' part! Format should be: event <desc> /from <start> /to <end>!");
+                        System.out.println(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>");
                         System.out.println("____________________________________________________________");
                     } else {
                         String from = partsTo[0].trim();
@@ -188,7 +191,7 @@ public class Exactly {
                 }
             } else {
                 System.out.println("____________________________________________________________");
-                System.out.println(" Uh-oh! I don't recognize that command! Try 'todo', 'deadline', 'event', 'mark', 'unmark', 'list' or 'bye'!");
+                System.out.println(" Huh? I don't understand what you said!");
                 System.out.println("____________________________________________________________");
             }
         }
