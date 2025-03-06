@@ -8,34 +8,68 @@ import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-// ===== Task and Subclasses =====
+/**
+ * Represents a task with a description and a status.
+ */
 class Task {
     protected String description;
     protected boolean isDone;
+
+    /**
+     * Constructs a Task with the specified description.
+     * @param description the task description.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
+
+    /** Marks the task as done. */
     public void markAsDone() { isDone = true; }
+
+    /** Marks the task as not done. */
     public void unmark() { isDone = false; }
+
+    /**
+     * Returns the status icon.
+     * @return "X" if done, otherwise " ".
+     */
     public String getStatusIcon() { return (isDone ? "X" : " "); }
+
     @Override
     public String toString() { return "[" + getStatusIcon() + "] " + description; }
 }
 
+/**
+ * Represents a Todo task.
+ */
 class Todo extends Task {
+    /**
+     * Constructs a Todo with the specified description.
+     * @param description the todo description.
+     */
     public Todo(String description) { super(description); }
+
     @Override
     public String toString() { return "[T]" + super.toString(); }
 }
 
+/**
+ * Represents a Deadline task with a due date.
+ */
 class Deadline extends Task {
     protected LocalDate by;
+
+    /**
+     * Constructs a Deadline with the specified description and due date.
+     * @param description the deadline description.
+     * @param by the due date in yyyy-MM-dd format.
+     */
     public Deadline(String description, String by) {
         super(description);
-        // Expect input in yyyy-MM-dd format, e.g., "2019-10-15"
         this.by = LocalDate.parse(by);
     }
+
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd yyyy");
@@ -43,30 +77,73 @@ class Deadline extends Task {
     }
 }
 
+/**
+ * Represents an Event task with start and end times.
+ */
 class Event extends Task {
     protected String from;
     protected String to;
+
+    /**
+     * Constructs an Event with the specified description, start, and end times.
+     * @param description the event description.
+     * @param from the start time.
+     * @param to the end time.
+     */
     public Event(String description, String from, String to) {
         super(description);
         this.from = from;
         this.to = to;
     }
+
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
 
-// ===== TaskList Class =====
+/**
+ * Manages a list of tasks.
+ */
 class TaskList {
     private List<Task> tasks;
+
+    /** Constructs an empty TaskList. */
     public TaskList() { this.tasks = new ArrayList<>(); }
+
+    /**
+     * Constructs a TaskList with the given tasks.
+     * @param tasks the initial tasks.
+     */
     public TaskList(List<Task> tasks) { this.tasks = tasks; }
+
+    /** Adds a task to the list. */
     public void add(Task task) { tasks.add(task); }
+
+    /**
+     * Removes the task at the specified index.
+     * @param index the index to remove.
+     * @return the removed task.
+     */
     public Task remove(int index) { return tasks.remove(index); }
+
+    /**
+     * Returns the task at the specified index.
+     * @param index the index.
+     * @return the task.
+     */
     public Task get(int index) { return tasks.get(index); }
+
+    /** Returns the number of tasks in the list. */
     public int size() { return tasks.size(); }
+
+    /** Returns the underlying list of tasks. */
     public List<Task> getTasks() { return tasks; }
+
+    /**
+     * Returns a string representing the tasks in the list.
+     * @return the task list as a string.
+     */
     public String listTasks() {
         StringBuilder sb = new StringBuilder();
         if (tasks.isEmpty()) {
@@ -81,10 +158,22 @@ class TaskList {
     }
 }
 
-// ===== Storage Class =====
+/**
+ * Handles loading and saving tasks from/to a file.
+ */
 class Storage {
     private String filePath;
+
+    /**
+     * Constructs a Storage with the specified file path.
+     * @param filePath the file path.
+     */
     public Storage(String filePath) { this.filePath = filePath; }
+
+    /**
+     * Loads tasks from the file.
+     * @return a list of tasks.
+     */
     public List<Task> load() {
         List<Task> tasks = new ArrayList<>();
         try {
@@ -120,6 +209,11 @@ class Storage {
         }
         return tasks;
     }
+
+    /**
+     * Saves the given tasks to the file.
+     * @param tasks the list of tasks.
+     */
     public void save(List<Task> tasks) {
         try {
             File dir = new File("data");
@@ -143,41 +237,76 @@ class Storage {
     }
 }
 
-// ===== Ui Class =====
+/**
+ * Manages user interactions.
+ */
 class Ui {
     private Scanner scanner;
+
+    /** Constructs a Ui with a new Scanner. */
     public Ui() { scanner = new Scanner(System.in); }
+
+    /** Displays the welcome message. */
     public void showWelcome() {
         System.out.println("____________________________________________________________");
         System.out.println(" Hey! I'm Exactly and I'm pumped to help you out! What do you need?");
         System.out.println("____________________________________________________________");
     }
+
+    /**
+     * Reads a command from the user.
+     * @return the command as a string.
+     */
     public String readCommand() { return scanner.nextLine().trim(); }
+
+    /** Displays a divider line. */
     public void showLine() { System.out.println("____________________________________________________________"); }
+
+    /** Displays an error message. */
     public void showError(String message) { System.out.println(message); }
+
+    /** Displays a loading error message. */
     public void showLoadingError() { System.out.println("Error loading tasks from file."); }
+
+    /** Closes the scanner. */
     public void close() { scanner.close(); }
 }
 
-// ===== Parser Class (Minimal) =====
+/**
+ * Parses user commands.
+ */
 class Parser {
+    /**
+     * Splits the input into command tokens.
+     * @param input the user input.
+     * @return an array of tokens.
+     */
     public static String[] parse(String input) {
         return input.split(" ", 2);
     }
 }
 
-// ===== Main Class: Exactly =====
+/**
+ * Main class for the Exactly app.
+ */
 public class Exactly {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
 
+    /**
+     * Constructs an Exactly app with the specified file path.
+     * @param filePath the path to the storage file.
+     */
     public Exactly(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
         tasks = new TaskList(storage.load());
     }
 
+    /**
+     * Runs the main application loop.
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
@@ -286,6 +415,10 @@ public class Exactly {
         ui.close();
     }
 
+    /**
+     * The main entry point for the Exactly app.
+     * @param args command-line arguments.
+     */
     public static void main(String[] args) {
         new Exactly("data/exactly.txt").run();
     }
