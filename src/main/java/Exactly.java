@@ -1,6 +1,8 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
 
 class Task {
     protected String description;
@@ -71,9 +73,73 @@ class Event extends Task {
 }
 
 public class Exactly {
+    private static final String FILE_PATH = "./data/exactly.txt";
+
+    public static List<Task> loadTasks() {
+        List<Task> tasks = new ArrayList<>();
+        try {
+            File file = new File(FILE_PATH);
+            if (!file.exists()) {
+                return tasks;
+            }
+            Scanner fileScanner = new Scanner(file);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(" \\| ");
+                try {
+                    String type = parts[0];
+                    boolean isDone = parts[1].trim().equals("1");
+                    if (type.equals("T")) {
+                        Todo t = new Todo(parts[2]);
+                        if (isDone) t.markAsDone();
+                        tasks.add(t);
+                    } else if (type.equals("D")) {
+                        Deadline d = new Deadline(parts[2], parts[3]);
+                        if (isDone) d.markAsDone();
+                        tasks.add(d);
+                    } else if (type.equals("E")) {
+                        Event e = new Event(parts[2], parts[3], parts[4]);
+                        if (isDone) e.markAsDone();
+                        tasks.add(e);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Warning: Skipping invalid task entry in file: " + line);
+                }
+            }
+            fileScanner.close();
+        } catch (Exception e) {
+            System.out.println("Error loading tasks: " + e.getMessage());
+        }
+        return tasks;
+    }
+
+    public static void saveTasks(List<Task> tasks) {
+        try {
+            File dir = new File("./data");
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            FileWriter fw = new FileWriter(FILE_PATH);
+            for (Task t : tasks) {
+                if (t instanceof Todo) {
+                    fw.write("T | " + (t.isDone ? "1" : "0") + " | " + t.description + "\n");
+                } else if (t instanceof Deadline) {
+                    Deadline d = (Deadline) t;
+                    fw.write("D | " + (t.isDone ? "1" : "0") + " | " + t.description + " | " + d.by + "\n");
+                } else if (t instanceof Event) {
+                    Event e = (Event) t;
+                    fw.write("E | " + (t.isDone ? "1" : "0") + " | " + t.description + " | " + e.from + " | " + e.to + "\n");
+                }
+            }
+            fw.close();
+        } catch (Exception e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks = loadTasks();
 
         System.out.println("____________________________________________________________");
         System.out.println(" Hey! I'm Exactly and I'm pumped to help you out! What do you need?");
@@ -101,7 +167,7 @@ public class Exactly {
             } else if (input.startsWith("mark ")) {
                 try {
                     int index = Integer.parseInt(input.substring(5).trim());
-                    if (index < 1 || index > tasks.size()) { // changed: use tasks.size()
+                    if (index < 1 || index > tasks.size()) {
                         System.out.println("____________________________________________________________");
                         System.out.println(" Huh? That task number doesn't exist! Check and try again!");
                         System.out.println("____________________________________________________________");
@@ -111,6 +177,7 @@ public class Exactly {
                         System.out.println(" Awesome! I've marked this task as done:");
                         System.out.println("   " + tasks.get(index - 1));
                         System.out.println("____________________________________________________________");
+                        saveTasks(tasks);
                     }
                 } catch (NumberFormatException e) {
                     System.out.println("____________________________________________________________");
@@ -120,7 +187,7 @@ public class Exactly {
             } else if (input.startsWith("unmark ")) {
                 try {
                     int index = Integer.parseInt(input.substring(7).trim());
-                    if (index < 1 || index > tasks.size()) { // changed: use tasks.size()
+                    if (index < 1 || index > tasks.size()) {
                         System.out.println("____________________________________________________________");
                         System.out.println(" That task number is off! Check and try again!");
                         System.out.println("____________________________________________________________");
@@ -130,6 +197,7 @@ public class Exactly {
                         System.out.println(" Got it! I've marked this task as not done yet:");
                         System.out.println("   " + tasks.get(index - 1));
                         System.out.println("____________________________________________________________");
+                        saveTasks(tasks);
                     }
                 } catch (NumberFormatException e) {
                     System.out.println("____________________________________________________________");
@@ -149,6 +217,7 @@ public class Exactly {
                     System.out.println("   " + tasks.get(tasks.size() - 1));
                     System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                     System.out.println("____________________________________________________________");
+                    saveTasks(tasks);
                 }
             } else if (input.startsWith("deadline")) {
                 String details = input.equals("deadline") ? "" : input.substring(8).trim();
@@ -164,6 +233,7 @@ public class Exactly {
                     System.out.println("   " + tasks.get(tasks.size() - 1));
                     System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                     System.out.println("____________________________________________________________");
+                    saveTasks(tasks);
                 }
             } else if (input.startsWith("event")) {
                 String details = input.equals("event") ? "" : input.substring(5).trim();
@@ -182,13 +252,13 @@ public class Exactly {
                     } else {
                         String from = partsTo[0].trim();
                         String to = partsTo[1].trim();
-                        // Removed erroneous line using array indexing and taskCount
-                        tasks.add(new Event(description, from, to)); // minimal change: only add via ArrayList
+                        tasks.add(new Event(description, from, to));
                         System.out.println("____________________________________________________________");
                         System.out.println(" Got it. I've added this task:");
                         System.out.println("   " + tasks.get(tasks.size() - 1));
                         System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                         System.out.println("____________________________________________________________");
+                        saveTasks(tasks);
                     }
                 }
             } else if (input.startsWith("delete ")) {
@@ -205,6 +275,7 @@ public class Exactly {
                         System.out.println("   " + removed);
                         System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                         System.out.println("____________________________________________________________");
+                        saveTasks(tasks);
                     }
                 } catch (NumberFormatException e) {
                     System.out.println("____________________________________________________________");
