@@ -317,94 +317,116 @@ public class Exactly {
             String command = tokens[0];
             try {
                 switch (command) {
-                    case "bye":
-                        System.out.println(" Bye! Keep crushing it and never settle for less!");
-                        isExit = true;
-                        break;
-                    case "list":
-                        System.out.print(tasks.listTasks());
-                        break;
-                    case "mark": {
-                        int markIndex = Integer.parseInt(tokens[1].trim());
-                        if (markIndex < 1 || markIndex > tasks.size()) {
-                            System.out.println(" Huh? That task number doesn't exist! Check and try again!");
-                        } else {
-                            tasks.get(markIndex - 1).markAsDone();
-                            System.out.println(" Awesome! I've marked this task as done:");
-                            System.out.println("   " + tasks.get(markIndex - 1));
-                        }
-                        break;
+                case "bye":
+                    System.out.println(" Bye! Keep crushing it and never settle for less!");
+                    isExit = true;
+                    break;
+                case "list":
+                    System.out.print(tasks.listTasks());
+                    break;
+                case "mark": {
+                    int markIndex = Integer.parseInt(tokens[1].trim());
+                    if (markIndex < 1 || markIndex > tasks.size()) {
+                        System.out.println(" Huh? That task number doesn't exist! Check and try again!");
+                    } else {
+                        tasks.get(markIndex - 1).markAsDone();
+                        System.out.println(" Awesome! I've marked this task as done:");
+                        System.out.println("   " + tasks.get(markIndex - 1));
                     }
-                    case "unmark": {
-                        int unmarkIndex = Integer.parseInt(tokens[1].trim());
-                        if (unmarkIndex < 1 || unmarkIndex > tasks.size()) {
-                            System.out.println(" That task number is off! Check and try again!");
-                        } else {
-                            tasks.get(unmarkIndex - 1).unmark();
-                            System.out.println(" Got it! I've marked this task as not done yet:");
-                            System.out.println("   " + tasks.get(unmarkIndex - 1));
-                        }
-                        break;
+                    break;
+                }
+                case "unmark": {
+                    int unmarkIndex = Integer.parseInt(tokens[1].trim());
+                    if (unmarkIndex < 1 || unmarkIndex > tasks.size()) {
+                        System.out.println(" That task number is off! Check and try again!");
+                    } else {
+                        tasks.get(unmarkIndex - 1).unmark();
+                        System.out.println(" Got it! I've marked this task as not done yet:");
+                        System.out.println("   " + tasks.get(unmarkIndex - 1));
                     }
-                    case "todo": {
-                        String todoDesc = tokens.length < 2 ? "" : tokens[1].trim();
-                        if (todoDesc.isEmpty()) {
-                            System.out.println(" Huh? The description for a todo task cannot be empty! Please give me a proper task!");
+                    break;
+                }
+                case "todo": {
+                    String todoDesc = tokens.length < 2 ? "" : tokens[1].trim();
+                    if (todoDesc.isEmpty()) {
+                        System.out.println(" Huh? The description for a todo task cannot be empty! Please give me a proper task!");
+                    } else {
+                        tasks.add(new Todo(todoDesc));
+                        System.out.println(" Got it. I've added this task:");
+                        System.out.println("   " + tasks.get(tasks.size() - 1));
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
+                    }
+                    break;
+                }
+                case "deadline": {
+                    String deadlineInput = tokens.length < 2 ? "" : tokens[1].trim();
+                    String[] deadlineParts = deadlineInput.split(" /by ");
+                    if (deadlineInput.isEmpty() || deadlineParts.length != 2 ||
+                            deadlineParts[0].trim().isEmpty() || deadlineParts[1].trim().isEmpty()) {
+                        System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>");
+                    } else {
+                        tasks.add(new Deadline(deadlineParts[0].trim(), deadlineParts[1].trim()));
+                        System.out.println(" Got it. I've added this task:");
+                        System.out.println("   " + tasks.get(tasks.size() - 1));
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
+                    }
+                    break;
+                }
+                case "event": {
+                    String eventInput = tokens.length < 2 ? "" : tokens[1].trim();
+                    String[] partsFrom = eventInput.split(" /from ");
+                    if (eventInput.isEmpty() || partsFrom.length != 2 || partsFrom[0].trim().isEmpty()) {
+                        System.out.println(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>");
+                    } else {
+                        String eventDesc = partsFrom[0].trim();
+                        String[] partsTo = partsFrom[1].split(" /to ");
+                        if (partsTo.length != 2 || partsTo[0].trim().isEmpty() || partsTo[1].trim().isEmpty()) {
+                            System.out.println(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>");
                         } else {
-                            tasks.add(new Todo(todoDesc));
+                            tasks.add(new Event(eventDesc, partsTo[0].trim(), partsTo[1].trim()));
                             System.out.println(" Got it. I've added this task:");
                             System.out.println("   " + tasks.get(tasks.size() - 1));
                             System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                         }
-                        break;
                     }
-                    case "deadline": {
-                        String deadlineInput = tokens.length < 2 ? "" : tokens[1].trim();
-                        String[] deadlineParts = deadlineInput.split(" /by ");
-                        if (deadlineInput.isEmpty() || deadlineParts.length != 2 ||
-                                deadlineParts[0].trim().isEmpty() || deadlineParts[1].trim().isEmpty()) {
-                            System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>");
-                        } else {
-                            tasks.add(new Deadline(deadlineParts[0].trim(), deadlineParts[1].trim()));
-                            System.out.println(" Got it. I've added this task:");
-                            System.out.println("   " + tasks.get(tasks.size() - 1));
-                            System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
-                        }
-                        break;
+                    break;
+                }
+                case "delete": {
+                    int deleteIndex = Integer.parseInt(tokens[1].trim());
+                    if (deleteIndex < 1 || deleteIndex > tasks.size()) {
+                        System.out.println(" Whoops! That task number doesn't exist! Check and try again!");
+                    } else {
+                        Task removed = tasks.remove(deleteIndex - 1);
+                        System.out.println(" Noted. I've removed this task:");
+                        System.out.println("   " + removed);
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                     }
-                    case "event": {
-                        String eventInput = tokens.length < 2 ? "" : tokens[1].trim();
-                        String[] partsFrom = eventInput.split(" /from ");
-                        if (eventInput.isEmpty() || partsFrom.length != 2 || partsFrom[0].trim().isEmpty()) {
-                            System.out.println(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>");
-                        } else {
-                            String eventDesc = partsFrom[0].trim();
-                            String[] partsTo = partsFrom[1].split(" /to ");
-                            if (partsTo.length != 2 || partsTo[0].trim().isEmpty() || partsTo[1].trim().isEmpty()) {
-                                System.out.println(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>");
-                            } else {
-                                tasks.add(new Event(eventDesc, partsTo[0].trim(), partsTo[1].trim()));
-                                System.out.println(" Got it. I've added this task:");
-                                System.out.println("   " + tasks.get(tasks.size() - 1));
-                                System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
+                    break;
+                }
+                case "find": {
+                    String keyword = tokens.length < 2 ? "" : tokens[1].trim();
+                    if (keyword.isEmpty()) {
+                        System.out.println(" Please provide a keyword to search for.");
+                    } else {
+                        List<Task> matchingTasks = new ArrayList<>();
+                        for (Task t : tasks.getTasks()) {
+                            if (t.description.contains(keyword)) {
+                                matchingTasks.add(t);
                             }
                         }
-                        break;
-                    }
-                    case "delete": {
-                        int deleteIndex = Integer.parseInt(tokens[1].trim());
-                        if (deleteIndex < 1 || deleteIndex > tasks.size()) {
-                            System.out.println(" Whoops! That task number doesn't exist! Check and try again!");
+                        if (matchingTasks.isEmpty()) {
+                            System.out.println(" No matching tasks found!");
                         } else {
-                            Task removed = tasks.remove(deleteIndex - 1);
-                            System.out.println(" Noted. I've removed this task:");
-                            System.out.println("   " + removed);
-                            System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                            System.out.println(" Here are the matching tasks in your list:");
+                            for (int i = 0; i < matchingTasks.size(); i++) {
+                                System.out.println(" " + (i + 1) + "." + matchingTasks.get(i));
+                            }
                         }
-                        break;
                     }
-                    default:
-                        System.out.println(" Huh? I don't understand what you said!");
+                    break;
+                }
+                default:
+                    System.out.println(" Huh? I don't understand what you said!");
                 }
             } catch (Exception e) {
                 System.out.println(" Error: " + e.getMessage());
