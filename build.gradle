@@ -27,9 +27,10 @@ test {
     }
 }
 
-application {
-    mainClass.set("seedu.duke.Duke")
-}
+//application {
+//    mainClass.set("seedu.duke.Duke")
+//}
+mainClassName = 'exactly.Exactly'
 
 shadowJar {
     archiveBaseName = "duke"
