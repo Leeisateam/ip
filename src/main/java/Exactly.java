@@ -1,3 +1,5 @@
+package exactly;
+
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
@@ -160,7 +162,6 @@ class Ui {
 // ===== Parser Class (Minimal) =====
 class Parser {
     public static String[] parse(String input) {
-        // Minimal parsing: split into command and the rest
         return input.split(" ", 2);
     }
 }
