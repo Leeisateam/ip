@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 class Task {
     protected String description;
@@ -71,8 +73,7 @@ class Event extends Task {
 public class Exactly {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        List<Task> tasks = new ArrayList<>();
 
         System.out.println("____________________________________________________________");
         System.out.println(" Hey! I'm Exactly and I'm pumped to help you out! What do you need?");
@@ -88,27 +89,27 @@ public class Exactly {
                 break;
             } else if (input.equals("list")) {
                 System.out.println("____________________________________________________________");
-                if (taskCount == 0) {
+                if (tasks.isEmpty()) {
                     System.out.println(" Wow, your task list is empty! Let's get started and add some awesome tasks!");
                 } else {
                     System.out.println(" Here are the tasks in your list:");
-                    for (int i = 0; i < taskCount; i++) {
-                        System.out.println(" " + (i + 1) + "." + tasks[i]);
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println(" " + (i + 1) + "." + tasks.get(i));
                     }
                 }
                 System.out.println("____________________________________________________________");
             } else if (input.startsWith("mark ")) {
                 try {
                     int index = Integer.parseInt(input.substring(5).trim());
-                    if (index < 1 || index > taskCount) {
+                    if (index < 1 || index > tasks.size()) { // changed: use tasks.size()
                         System.out.println("____________________________________________________________");
                         System.out.println(" Huh? That task number doesn't exist! Check and try again!");
                         System.out.println("____________________________________________________________");
                     } else {
-                        tasks[index - 1].markAsDone();
+                        tasks.get(index - 1).markAsDone();
                         System.out.println("____________________________________________________________");
                         System.out.println(" Awesome! I've marked this task as done:");
-                        System.out.println("   " + tasks[index - 1]);
+                        System.out.println("   " + tasks.get(index - 1));
                         System.out.println("____________________________________________________________");
                     }
                 } catch (NumberFormatException e) {
@@ -119,15 +120,15 @@ public class Exactly {
             } else if (input.startsWith("unmark ")) {
                 try {
                     int index = Integer.parseInt(input.substring(7).trim());
-                    if (index < 1 || index > taskCount) {
+                    if (index < 1 || index > tasks.size()) { // changed: use tasks.size()
                         System.out.println("____________________________________________________________");
                         System.out.println(" That task number is off! Check and try again!");
                         System.out.println("____________________________________________________________");
                     } else {
-                        tasks[index - 1].unmark();
+                        tasks.get(index - 1).unmark();
                         System.out.println("____________________________________________________________");
                         System.out.println(" Got it! I've marked this task as not done yet:");
-                        System.out.println("   " + tasks[index - 1]);
+                        System.out.println("   " + tasks.get(index - 1));
                         System.out.println("____________________________________________________________");
                     }
                 } catch (NumberFormatException e) {
@@ -142,11 +143,11 @@ public class Exactly {
                     System.out.println(" Huh? The description for a todo task cannot be empty! Please give me a proper task!");
                     System.out.println("____________________________________________________________");
                 } else {
-                    tasks[taskCount++] = new Todo(description);
+                    tasks.add(new Todo(description));
                     System.out.println("____________________________________________________________");
                     System.out.println(" Got it. I've added this task:");
-                    System.out.println("   " + tasks[taskCount - 1]);
-                    System.out.println(" Now you have " + taskCount + " tasks in the list!");
+                    System.out.println("   " + tasks.get(tasks.size() - 1));
+                    System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                     System.out.println("____________________________________________________________");
                 }
             } else if (input.startsWith("deadline")) {
@@ -157,11 +158,11 @@ public class Exactly {
                     System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <time>");
                     System.out.println("____________________________________________________________");
                 } else {
-                    tasks[taskCount++] = new Deadline(parts[0].trim(), parts[1].trim());
+                    tasks.add(new Deadline(parts[0].trim(), parts[1].trim()));
                     System.out.println("____________________________________________________________");
                     System.out.println(" Got it. I've added this task:");
-                    System.out.println("   " + tasks[taskCount - 1]);
-                    System.out.println(" Now you have " + taskCount + " tasks in the list!");
+                    System.out.println("   " + tasks.get(tasks.size() - 1));
+                    System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                     System.out.println("____________________________________________________________");
                 }
             } else if (input.startsWith("event")) {
@@ -181,13 +182,34 @@ public class Exactly {
                     } else {
                         String from = partsTo[0].trim();
                         String to = partsTo[1].trim();
-                        tasks[taskCount++] = new Event(description, from, to);
+                        // Removed erroneous line using array indexing and taskCount
+                        tasks.add(new Event(description, from, to)); // minimal change: only add via ArrayList
                         System.out.println("____________________________________________________________");
                         System.out.println(" Got it. I've added this task:");
-                        System.out.println("   " + tasks[taskCount - 1]);
-                        System.out.println(" Now you have " + taskCount + " tasks in the list!");
+                        System.out.println("   " + tasks.get(tasks.size() - 1));
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
                         System.out.println("____________________________________________________________");
                     }
+                }
+            } else if (input.startsWith("delete ")) {
+                try {
+                    int index = Integer.parseInt(input.substring(7).trim());
+                    if (index < 1 || index > tasks.size()) {
+                        System.out.println("____________________________________________________________");
+                        System.out.println(" Whoops! That task number doesn't exist! Check and try again!");
+                        System.out.println("____________________________________________________________");
+                    } else {
+                        Task removed = tasks.remove(index - 1);
+                        System.out.println("____________________________________________________________");
+                        System.out.println(" Noted. I've removed this task:");
+                        System.out.println("   " + removed);
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println("____________________________________________________________");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("____________________________________________________________");
+                    System.out.println(" Please provide a valid task number after 'delete'!");
+                    System.out.println("____________________________________________________________");
                 }
             } else {
                 System.out.println("____________________________________________________________");
