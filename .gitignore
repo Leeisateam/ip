@@ -8,9 +8,8 @@
 /build/
 src/main/resources/docs/
 .gradle/
-build/
-/daemon/
-daemon/
+daemon/**
+/daemon/**
 
 
 # MacOS custom attributes files created by Finder
