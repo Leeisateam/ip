@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 class Task {
     protected String description;
@@ -43,16 +45,20 @@ class Todo extends Task {
 }
 
 class Deadline extends Task {
-    protected String by;
+    // CHANGED: Store deadline date as LocalDate
+    protected LocalDate by;
 
     public Deadline(String description, String by) {
         super(description);
-        this.by = by;
+        // Expect input in yyyy-MM-dd format, e.g., "2019-10-15"
+        this.by = LocalDate.parse(by);
     }
 
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + by + ")";
+        // CHANGED: Format date as "MMM dd yyyy", e.g., "Oct 15 2019"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd yyyy");
+        return "[D]" + super.toString() + " (by: " + by.format(formatter) + ")";
     }
 }
 
@@ -94,6 +100,7 @@ public class Exactly {
                         if (isDone) t.markAsDone();
                         tasks.add(t);
                     } else if (type.equals("D")) {
+                        // CHANGED: Deadline constructor now expects a date string in yyyy-MM-dd
                         Deadline d = new Deadline(parts[2], parts[3]);
                         if (isDone) d.markAsDone();
                         tasks.add(d);
@@ -125,7 +132,8 @@ public class Exactly {
                     fw.write("T | " + (t.isDone ? "1" : "0") + " | " + t.description + "\n");
                 } else if (t instanceof Deadline) {
                     Deadline d = (Deadline) t;
-                    fw.write("D | " + (t.isDone ? "1" : "0") + " | " + t.description + " | " + d.by + "\n");
+                    // CHANGED: Save deadline date using LocalDate.toString() (yyyy-MM-dd)
+                    fw.write("D | " + (t.isDone ? "1" : "0") + " | " + t.description + " | " + d.by.toString() + "\n");
                 } else if (t instanceof Event) {
                     Event e = (Event) t;
                     fw.write("E | " + (t.isDone ? "1" : "0") + " | " + t.description + " | " + e.from + " | " + e.to + "\n");
@@ -224,7 +232,7 @@ public class Exactly {
                 String[] parts = details.split(" /by ");
                 if (details.isEmpty() || parts.length != 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
                     System.out.println("____________________________________________________________");
-                    System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <time>");
+                    System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>");
                     System.out.println("____________________________________________________________");
                 } else {
                     tasks.add(new Deadline(parts[0].trim(), parts[1].trim()));
