@@ -151,7 +151,7 @@ class TaskList {
         } else {
             sb.append(" Here are the tasks in your list:\n");
             for (int i = 0; i < tasks.size(); i++) {
-                sb.append(" " + (i + 1) + "." + tasks.get(i) + "\n");
+                sb.append(" " + (i + 1) + ". " + tasks.get(i) + "\n");
             }
         }
         return sb.toString();
@@ -288,11 +288,16 @@ class Parser {
 
 /**
  * Main class for the Exactly app.
+ *
+ * This version has been modified to facilitate integration with a JavaFX GUI.
+ * It now includes a getWelcomeMessage() method and a getResponse(String input)
+ * method that processes a single command and returns the chatbot's reply.
  */
 public class Exactly {
     private Storage storage;
     private TaskList tasks;
-    private Ui ui;
+    // Made package-visible so that the GUI can access the chatbot if needed.
+    Ui ui;
 
     /**
      * Constructs an Exactly app with the specified file path.
@@ -305,7 +310,147 @@ public class Exactly {
     }
 
     /**
-     * Runs the main application loop.
+     * Returns the welcome message.
+     * @return the welcome message as a String.
+     */
+    public String getWelcomeMessage() {
+        return "____________________________________________________________\n"
+                + " Hey! I'm Exactly and I'm pumped to help you out! What do you need?\n"
+                + "____________________________________________________________\n";
+    }
+
+    /**
+     * Processes a single user command and returns the chatbot's response.
+     * @param input the user's command.
+     * @return the response as a String.
+     */
+    public String getResponse(String input) {
+        StringBuilder output = new StringBuilder();
+        output.append("____________________________________________________________\n");
+        String[] tokens = Parser.parse(input);
+        String command = tokens[0];
+        try {
+            switch (command) {
+            case "bye":
+                output.append(" Bye! Keep crushing it and never settle for less!\n");
+                break;
+            case "list":
+                output.append(tasks.listTasks());
+                break;
+            case "mark": {
+                int markIndex = Integer.parseInt(tokens[1].trim());
+                if (markIndex < 1 || markIndex > tasks.size()) {
+                    output.append(" Huh? That task number doesn't exist! Check and try again!\n");
+                } else {
+                    tasks.get(markIndex - 1).markAsDone();
+                    output.append(" Awesome! I've marked this task as done:\n")
+                            .append("   ").append(tasks.get(markIndex - 1)).append("\n");
+                }
+                break;
+            }
+            case "unmark": {
+                int unmarkIndex = Integer.parseInt(tokens[1].trim());
+                if (unmarkIndex < 1 || unmarkIndex > tasks.size()) {
+                    output.append(" That task number is off! Check and try again!\n");
+                } else {
+                    tasks.get(unmarkIndex - 1).unmark();
+                    output.append(" Got it! I've marked this task as not done yet:\n")
+                            .append("   ").append(tasks.get(unmarkIndex - 1)).append("\n");
+                }
+                break;
+            }
+            case "todo": {
+                String todoDesc = tokens.length < 2 ? "" : tokens[1].trim();
+                if (todoDesc.isEmpty()) {
+                    output.append(" Huh? The description for a todo task cannot be empty! Please give me a proper task!\n");
+                } else {
+                    tasks.add(new Todo(todoDesc));
+                    output.append(" Got it. I've added this task:\n")
+                            .append("   ").append(tasks.get(tasks.size() - 1)).append("\n")
+                            .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
+                }
+                break;
+            }
+            case "deadline": {
+                String deadlineInput = tokens.length < 2 ? "" : tokens[1].trim();
+                String[] deadlineParts = deadlineInput.split(" /by ");
+                if (deadlineInput.isEmpty() || deadlineParts.length != 2 ||
+                        deadlineParts[0].trim().isEmpty() || deadlineParts[1].trim().isEmpty()) {
+                    output.append(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>\n");
+                } else {
+                    tasks.add(new Deadline(deadlineParts[0].trim(), deadlineParts[1].trim()));
+                    output.append(" Got it. I've added this task:\n")
+                            .append("   ").append(tasks.get(tasks.size() - 1)).append("\n")
+                            .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
+                }
+                break;
+            }
+            case "event": {
+                String eventInput = tokens.length < 2 ? "" : tokens[1].trim();
+                String[] partsFrom = eventInput.split(" /from ");
+                if (eventInput.isEmpty() || partsFrom.length != 2 || partsFrom[0].trim().isEmpty()) {
+                    output.append(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>\n");
+                } else {
+                    String eventDesc = partsFrom[0].trim();
+                    String[] partsTo = partsFrom[1].split(" /to ");
+                    if (partsTo.length != 2 || partsTo[0].trim().isEmpty() || partsTo[1].trim().isEmpty()) {
+                        output.append(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>\n");
+                    } else {
+                        tasks.add(new Event(eventDesc, partsTo[0].trim(), partsTo[1].trim()));
+                        output.append(" Got it. I've added this task:\n")
+                                .append("   ").append(tasks.get(tasks.size() - 1)).append("\n")
+                                .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
+                    }
+                }
+                break;
+            }
+            case "delete": {
+                int deleteIndex = Integer.parseInt(tokens[1].trim());
+                if (deleteIndex < 1 || deleteIndex > tasks.size()) {
+                    output.append(" Whoops! That task number doesn't exist! Check and try again!\n");
+                } else {
+                    Task removed = tasks.remove(deleteIndex - 1);
+                    output.append(" Noted. I've removed this task:\n")
+                            .append("   ").append(removed).append("\n")
+                            .append(" Now you have ").append(tasks.size()).append(" tasks in the list.\n");
+                }
+                break;
+            }
+            case "find": {
+                String keyword = tokens.length < 2 ? "" : tokens[1].trim();
+                if (keyword.isEmpty()) {
+                    output.append(" Please provide a keyword to search for.\n");
+                } else {
+                    List<Task> matchingTasks = new ArrayList<>();
+                    for (Task t : tasks.getTasks()) {
+                        if (t.description.contains(keyword)) {
+                            matchingTasks.add(t);
+                        }
+                    }
+                    if (matchingTasks.isEmpty()) {
+                        output.append(" No matching tasks found!\n");
+                    } else {
+                        output.append(" Here are the matching tasks in your list:\n");
+                        for (int i = 0; i < matchingTasks.size(); i++) {
+                            output.append(" " + (i + 1) + ". " + matchingTasks.get(i) + "\n");
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                output.append(" Huh? I don't understand what you said!\n");
+            }
+        } catch (Exception e) {
+            output.append(" Error: ").append(e.getMessage()).append("\n");
+        }
+        output.append("____________________________________________________________\n");
+        storage.save(tasks.getTasks());
+        return output.toString();
+    }
+
+    /**
+     * Runs the CLI version of Exactly.
      */
     public void run() {
         ui.showWelcome();
@@ -313,112 +458,15 @@ public class Exactly {
         while (!isExit) {
             String input = ui.readCommand();
             ui.showLine();
-            String[] tokens = Parser.parse(input);
-            String command = tokens[0];
-            try {
-                switch (command) {
-                    case "bye":
-                        System.out.println(" Bye! Keep crushing it and never settle for less!");
-                        isExit = true;
-                        break;
-                    case "list":
-                        System.out.print(tasks.listTasks());
-                        break;
-                    case "mark": {
-                        int markIndex = Integer.parseInt(tokens[1].trim());
-                        if (markIndex < 1 || markIndex > tasks.size()) {
-                            System.out.println(" Huh? That task number doesn't exist! Check and try again!");
-                        } else {
-                            tasks.get(markIndex - 1).markAsDone();
-                            System.out.println(" Awesome! I've marked this task as done:");
-                            System.out.println("   " + tasks.get(markIndex - 1));
-                        }
-                        break;
-                    }
-                    case "unmark": {
-                        int unmarkIndex = Integer.parseInt(tokens[1].trim());
-                        if (unmarkIndex < 1 || unmarkIndex > tasks.size()) {
-                            System.out.println(" That task number is off! Check and try again!");
-                        } else {
-                            tasks.get(unmarkIndex - 1).unmark();
-                            System.out.println(" Got it! I've marked this task as not done yet:");
-                            System.out.println("   " + tasks.get(unmarkIndex - 1));
-                        }
-                        break;
-                    }
-                    case "todo": {
-                        String todoDesc = tokens.length < 2 ? "" : tokens[1].trim();
-                        if (todoDesc.isEmpty()) {
-                            System.out.println(" Huh? The description for a todo task cannot be empty! Please give me a proper task!");
-                        } else {
-                            tasks.add(new Todo(todoDesc));
-                            System.out.println(" Got it. I've added this task:");
-                            System.out.println("   " + tasks.get(tasks.size() - 1));
-                            System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
-                        }
-                        break;
-                    }
-                    case "deadline": {
-                        String deadlineInput = tokens.length < 2 ? "" : tokens[1].trim();
-                        String[] deadlineParts = deadlineInput.split(" /by ");
-                        if (deadlineInput.isEmpty() || deadlineParts.length != 2 ||
-                                deadlineParts[0].trim().isEmpty() || deadlineParts[1].trim().isEmpty()) {
-                            System.out.println(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>");
-                        } else {
-                            tasks.add(new Deadline(deadlineParts[0].trim(), deadlineParts[1].trim()));
-                            System.out.println(" Got it. I've added this task:");
-                            System.out.println("   " + tasks.get(tasks.size() - 1));
-                            System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
-                        }
-                        break;
-                    }
-                    case "event": {
-                        String eventInput = tokens.length < 2 ? "" : tokens[1].trim();
-                        String[] partsFrom = eventInput.split(" /from ");
-                        if (eventInput.isEmpty() || partsFrom.length != 2 || partsFrom[0].trim().isEmpty()) {
-                            System.out.println(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>");
-                        } else {
-                            String eventDesc = partsFrom[0].trim();
-                            String[] partsTo = partsFrom[1].split(" /to ");
-                            if (partsTo.length != 2 || partsTo[0].trim().isEmpty() || partsTo[1].trim().isEmpty()) {
-                                System.out.println(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>");
-                            } else {
-                                tasks.add(new Event(eventDesc, partsTo[0].trim(), partsTo[1].trim()));
-                                System.out.println(" Got it. I've added this task:");
-                                System.out.println("   " + tasks.get(tasks.size() - 1));
-                                System.out.println(" Now you have " + tasks.size() + " tasks in the list!");
-                            }
-                        }
-                        break;
-                    }
-                    case "delete": {
-                        int deleteIndex = Integer.parseInt(tokens[1].trim());
-                        if (deleteIndex < 1 || deleteIndex > tasks.size()) {
-                            System.out.println(" Whoops! That task number doesn't exist! Check and try again!");
-                        } else {
-                            Task removed = tasks.remove(deleteIndex - 1);
-                            System.out.println(" Noted. I've removed this task:");
-                            System.out.println("   " + removed);
-                            System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                        }
-                        break;
-                    }
-                    default:
-                        System.out.println(" Huh? I don't understand what you said!");
-                }
-            } catch (Exception e) {
-                System.out.println(" Error: " + e.getMessage());
-            }
+            System.out.print(getResponse(input));
             ui.showLine();
-            storage.save(tasks.getTasks());
+            if (input.trim().equals("bye")) {
+                isExit = true;
+            }
         }
         ui.close();
     }
 
-    /**
-     * The main entry point for the Exactly app.
-     * @param args command-line arguments.
-     */
     public static void main(String[] args) {
         new Exactly("data/exactly.txt").run();
     }

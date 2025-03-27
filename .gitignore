@@ -6,11 +6,8 @@
 # Gradle build files
 /.gradle/
 /build/
-src/main/resources/docs/
-.gradle/
-build/
-/daemon/
-daemon/
+/src/main/resources/docs/
+/daemon/**
 
 
 # MacOS custom attributes files created by Finder
