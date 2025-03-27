@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 /**
  * Represents a task with a description and a status.
@@ -421,12 +422,10 @@ public class Exactly {
                 if (keyword.isEmpty()) {
                     output.append(" Please provide a keyword to search for.\n");
                 } else {
-                    List<Task> matchingTasks = new ArrayList<>();
-                    for (Task t : tasks.getTasks()) {
-                        if (t.description.contains(keyword)) {
-                            matchingTasks.add(t);
-                        }
-                    }
+                    // Use Java Streams to filter tasks by keyword
+                    List<Task> matchingTasks = tasks.getTasks().stream()
+                            .filter(t -> t.description.contains(keyword))
+                            .collect(Collectors.toList());
                     if (matchingTasks.isEmpty()) {
                         output.append(" No matching tasks found!\n");
                     } else {
