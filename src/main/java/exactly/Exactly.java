@@ -21,6 +21,8 @@ class Task {
      * @param description the task description.
      */
     public Task(String description) {
+        // Assert that description is not null or empty.
+        assert description != null && !description.isEmpty() : "Task description must not be null or empty";
         this.description = description;
         this.isDone = false;
     }
@@ -84,6 +86,8 @@ class Deadline extends Task {
      */
     public Deadline(String description, String by) {
         super(description);
+        // Assert that the due date string is not null or empty.
+        assert by != null && !by.isEmpty() : "Deadline date must not be null or empty";
         this.by = LocalDate.parse(by);
     }
 
@@ -110,6 +114,9 @@ class Event extends Task {
      */
     public Event(String description, String from, String to) {
         super(description);
+        // Assert that both start and end times are provided.
+        assert from != null && !from.isEmpty() : "Event start time must not be null or empty";
+        assert to != null && !to.isEmpty() : "Event end time must not be null or empty";
         this.from = from;
         this.to = to;
     }
@@ -137,11 +144,29 @@ class TaskList {
      * @param tasks the initial tasks.
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "Initial tasks list must not be null";
         this.tasks = tasks;
     }
 
     /** Adds a task to the list. */
     public void add(Task task) {
+        assert task != null : "Task to add must not be null";
+        tasks.add(task);
+    }
+
+    /**
+     * Overloaded add method that accepts multiple tasks using varargs.
+     * @param tasksToAdd the tasks to add.
+     */
+    public void add(Task... tasksToAdd) {
+        // Assert that tasksToAdd array is not null.
+        assert tasksToAdd != null : "Tasks array must not be null";
+        for (Task t : tasksToAdd) {
+            // Each task should not be null.
+            assert t != null : "Individual task must not be null";
+            tasks.add(t);
+        }
+    }
         tasks.add(task);
     }
 
@@ -206,6 +231,7 @@ class Storage {
      * @param filePath the file path.
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.isEmpty() : "File path must not be null or empty";
         this.filePath = filePath;
     }
 
@@ -353,6 +379,7 @@ class Parser {
      * @return an array of tokens.
      */
     public static String[] parse(String input) {
+        assert input != null : "Input must not be null";
         return input.split(" ", 2);
     }
 }
@@ -377,6 +404,7 @@ public class Exactly {
      * @param filePath the path to the storage file.
      */
     public Exactly(String filePath) {
+        assert filePath != null && !filePath.isEmpty() : "File path must not be null or empty";
         ui = new Ui();
         storage = new Storage(filePath);
         tasks = new TaskList(storage.load());
@@ -400,9 +428,13 @@ public class Exactly {
      * @return the response as a String.
      */
     public String getResponse(String input) {
+        // Assert input is not null.
+        assert input != null : "Input must not be null";
         StringBuilder output = new StringBuilder();
         output.append("____________________________________________________________\n");
         String[] tokens = Parser.parse(input);
+        // Assert that at least one token is present.
+        assert tokens.length > 0 : "Parser should return at least one token";
         String command = tokens[0];
         try {
             switch (command) {
@@ -413,6 +445,8 @@ public class Exactly {
                 output.append(tasks.listTasks());
                 break;
             case "mark": {
+                // Assert that a parameter exists for the mark command.
+                assert tokens.length > 1 : "Mark command requires a task number";
                 int markIndex = Integer.parseInt(tokens[1].trim());
                 if (markIndex < 1 || markIndex > tasks.size()) {
                     output.append(" Huh? That task number doesn't exist! Check and try again!\n");
@@ -424,6 +458,8 @@ public class Exactly {
                 break;
             }
             case "unmark": {
+                // Assert that a parameter exists for the unmark command.
+                assert tokens.length > 1 : "Unmark command requires a task number";
                 int unmarkIndex = Integer.parseInt(tokens[1].trim());
                 if (unmarkIndex < 1 || unmarkIndex > tasks.size()) {
                     output.append(" That task number is off! Check and try again!\n");
@@ -480,6 +516,8 @@ public class Exactly {
                 break;
             }
             case "delete": {
+                // Assert that a parameter exists for the delete command.
+                assert tokens.length > 1 : "Delete command requires a task number";
                 int deleteIndex = Integer.parseInt(tokens[1].trim());
                 if (deleteIndex < 1 || deleteIndex > tasks.size()) {
                     output.append(" Whoops! That task number doesn't exist! Check and try again!\n");
