@@ -193,9 +193,8 @@ class TaskList {
         this.tasks = new ArrayList < > ();
     }
 
-    /** Constructs a TaskList with the given tasks. */
     public TaskList(List < Task > tasks) {
-        assert tasks != null: "Initial tasks list must not be null";
+        assert tasks != null: "Initial task list must not be null";
         this.tasks = tasks;
     }
 
@@ -461,9 +460,9 @@ public class Exactly {
      * @return the welcome message including dividers and prompt
      */
     public String getWelcomeMessage() {
-        return "____________________________________________________________\n"
-                + " Hey! I'm Exactly and I'm pumped to help you out! What do you need?\n"
-                + "____________________________________________________________\n";
+        return "____________________________________________________________\n" +
+                " Hey! I'm Exactly and I'm pumped to help you out! What do you need?\n" +
+                "____________________________________________________________\n";
     }
     /**
      * Processes a single user input and returns Exactly’s reply.
