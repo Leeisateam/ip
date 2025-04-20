@@ -24,7 +24,7 @@ class Task {
      */
     public Task(String description) {
         // Assert that description is not null or empty.
-        assert description != null && !description.isEmpty() : "Task description must not be null or empty";
+        assert description != null && !description.isEmpty(): "Task description must not be null or empty";
         this.description = description;
         this.isDone = false;
     }
@@ -47,12 +47,21 @@ class Task {
     public String getStatusIcon() {
         return isDone ? "X" : " ";
     }
-
+    /**
+     * Return a string representation of the Task.
+     *
+     * @return formatted string "[<status>] <description>"
+     */
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
     }
-
+    /**
+     * Compare this Task to another for equality based on type and content.
+     *
+     * @param obj the object to compare against
+     * @return true if both tasks are of the same subclass and have equal data
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -69,7 +78,11 @@ class Task {
         }
         return true; // for Todo
     }
-
+    /**
+     * Compute a hash code consistent with equals.
+     *
+     * @return hash code for this Task
+     */
     @Override
     public int hashCode() {
         if (this instanceof Deadline) {
@@ -96,7 +109,11 @@ class Todo extends Task {
     public Todo(String description) {
         super(description);
     }
-
+    /**
+     * Return a string representation of the Todo task.
+     *
+     * @return formatted string "[T][<status>] <description>"
+     */
     @Override
     public String toString() {
         return "[T]" + super.toString();
@@ -117,10 +134,15 @@ class Deadline extends Task {
      */
     public Deadline(String description, String by) {
         super(description);
-        assert by != null && !by.isEmpty() : "Deadline date must not be null or empty";
+        assert by != null && !by.isEmpty(): "Deadline date must not be null or empty";
         this.by = LocalDate.parse(by);
     }
 
+    /**
+     * Return a string representation of the Deadline task.
+     *
+     * @return formatted string "[D][<status>] <description> (by: MMM dd yyyy)"
+     */
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd yyyy");
@@ -144,12 +166,16 @@ class Event extends Task {
      */
     public Event(String description, String from, String to) {
         super(description);
-        assert from != null && !from.isEmpty() : "Event start time must not be null or empty";
-        assert to != null && !to.isEmpty() : "Event end time must not be null or empty";
+        assert from != null && !from.isEmpty(): "Event start time must not be null or empty";
+        assert to != null && !to.isEmpty(): "Event end time must not be null or empty";
         this.from = from;
         this.to = to;
     }
-
+    /**
+     * Return a string representation of the Event task.
+     *
+     * @return formatted string "[E][<status>] <description> (from: <from> to: <to>)"
+     */
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
@@ -160,42 +186,82 @@ class Event extends Task {
  * Manages a list of tasks.
  */
 class TaskList {
-    private final List<Task> tasks;
+    private final List < Task > tasks;
 
     /** Constructs an empty TaskList. */
     public TaskList() {
-        this.tasks = new ArrayList<>();
+        this.tasks = new ArrayList < > ();
     }
 
     /** Constructs a TaskList with the given tasks. */
-    public TaskList(List<Task> tasks) {
-        assert tasks != null : "Initial tasks list must not be null";
+    public TaskList(List < Task > tasks) {
+        assert tasks != null: "Initial tasks list must not be null";
         this.tasks = tasks;
     }
 
-    /** Adds a task to the list. */
+    /**
+     * Add a single task to this TaskList.
+     *
+     * @param task the Task to add; must not be null
+     */
     public void add(Task task) {
-        assert task != null : "Task to add must not be null";
+        assert task != null: "Task to add must not be null";
         tasks.add(task);
     }
 
     /**
-     * Overloaded add method that accepts multiple tasks using varargs.
-     * @param tasksToAdd the tasks to add.
+     * Add multiple tasks to this TaskList.
+     *
+     * @param tasksToAdd one or more Task objects; none may be null
      */
-    public void add(Task... tasksToAdd) {
-        assert tasksToAdd != null : "Tasks array must not be null";
-        for (Task t : tasksToAdd) {
-            assert t != null : "Individual task must not be null";
+    public void add(Task...tasksToAdd) {
+        assert tasksToAdd != null: "Tasks array must not be null";
+        for (Task t: tasksToAdd) {
+            assert t != null: "Individual task must not be null";
             tasks.add(t);
         }
     }
+    /**
+     * Remove and return the task at the given index.
+     *
+     * @param index zero-based position of the task to remove
+     * @return the Task that was removed
+     */
+    public Task remove(int index) {
+        return tasks.remove(index);
+    }
+    /**
+     * Retrieve the task at the given zero‑based index.
+     *
+     * @param index position of the task to retrieve
+     * @return the Task at that index
+     */
+    public Task get(int index) {
+        return tasks.get(index);
+    }
+    /**
+     * Report how many tasks are currently in this list.
+     *
+     * @return the number of tasks
+     */
+    public int size() {
+        return tasks.size();
+    }
 
-    public Task remove(int index) { return tasks.remove(index); }
-    public Task get(int index)     { return tasks.get(index);  }
-    public int size()              { return tasks.size();      }
-    public List<Task> getTasks()   { return tasks;            }
+    /**
+     * Expose the live list of tasks.
+     *
+     * @return a modifiable List of all Task objects
+     */
+    public List < Task > getTasks() {
+        return tasks;
+    }
 
+    /**
+     * Produce a user‑friendly listing of all tasks.
+     *
+     * @return formatted string of numbered tasks or empty‑list message
+     */
     public String listTasks() {
         StringBuilder sb = new StringBuilder();
         if (tasks.isEmpty()) {
@@ -216,13 +282,23 @@ class TaskList {
 class Storage {
     private final String filePath;
 
+    /**
+     * Create a Storage handler for the given file path.
+     *
+     * @param filePath path to the data file where tasks are persisted
+     */
     public Storage(String filePath) {
-        assert filePath != null && !filePath.isEmpty() : "File path must not be null or empty";
+        assert filePath != null && !filePath.isEmpty(): "File path must not be null or empty";
         this.filePath = filePath;
     }
 
-    public List<Task> load() {
-        List<Task> tasks = new ArrayList<>();
+    /**
+     * Load all tasks from the storage file.
+     *
+     * @return a List of Tasks (empty if file not found or empty)
+     */
+    public List < Task > load() {
+        List < Task > tasks = new ArrayList < > ();
         try {
             File file = new File(filePath);
             if (!file.exists()) return tasks;
@@ -262,13 +338,17 @@ class Storage {
         }
         return tasks;
     }
-
-    public void save(List<Task> tasks) {
+    /**
+     * Save the given tasks to the storage file.
+     *
+     * @param tasks the list of tasks to persist
+     */
+    public void save(List < Task > tasks) {
         try {
             File dir = new File("data");
             if (!dir.exists()) dir.mkdir();
             FileWriter fw = new FileWriter(filePath);
-            for (Task t : tasks) {
+            for (Task t: tasks) {
                 if (t instanceof Todo) {
                     fw.write("T | " + (t.isDone ? "1" : "0") + " | " + t.description + "\n");
                 } else if (t instanceof Deadline) {
@@ -292,191 +372,330 @@ class Storage {
 class Ui {
     private final Scanner scanner;
 
-    public Ui() { scanner = new Scanner(System.in); }
+    public Ui() {
+        scanner = new Scanner(System.in);
+    }
+    /**
+     * Print the initial greeting banner to the console.
+     */
     public void showWelcome() {
         System.out.println("____________________________________________________________");
         System.out.println(" Hey! I'm Exactly and I'm pumped to help you out! What do you need?");
         System.out.println("____________________________________________________________");
     }
-    public String readCommand() { return scanner.nextLine().trim(); }
-    public void showLine()    { System.out.println("____________________________________________________________"); }
-    public void showError(String message) { System.out.println(message); }
-    public void showLoadingError()       { System.out.println("Error loading tasks from file."); }
-    public void close() { scanner.close(); }
+    /**
+     * Read a line of user input from the console.
+     *
+     * @return the trimmed input string
+     */
+    public String readCommand() {
+        return scanner.nextLine().trim();
+    }
+    /**
+     * Print a divider line to the console.
+     */
+    public void showLine() {
+        System.out.println("____________________________________________________________");
+    }
+    /**
+     * Display an error message in the console.
+     *
+     * @param message the error text to show
+     */
+    public void showError(String message) {
+        System.out.println(message);
+    }
+    /**
+     * Display a loading‑error notice when storage fails.
+     */
+    public void showLoadingError() {
+        System.out.println("Error loading tasks from file.");
+    }
+    /**
+     * Close any resources held by the UI (e.g., the Scanner).
+     */
+    public void close() {
+        scanner.close();
+    }
 }
 
 /**
  * Parses user commands.
  */
 class Parser {
+    /**
+     * Split raw user input into command and arguments.
+     *
+     * @param input the full input string
+     * @return an array where element 0 is the command, element 1 (optional) are the args
+     */
     public static String[] parse(String input) {
-        assert input != null : "Input must not be null";
+        assert input != null: "Input must not be null";
         return input.split(" ", 2);
     }
 }
 
 /**
- * Main class for the Exactly app.
+ * Main class for the Exactly chatbot application.
+ *
+ * Manages the UI, command parsing, task list, and storage.
  */
 public class Exactly {
     private final Storage storage;
     private final TaskList tasks;
     Ui ui;
-
+    /**
+     * Initialize Exactly with the given storage file path and load existing tasks.
+     *
+     * @param filePath path to the file used for loading and saving tasks
+     */
     public Exactly(String filePath) {
-        assert filePath != null && !filePath.isEmpty() : "File path must not be null or empty";
+        assert filePath != null && !filePath.isEmpty(): "File path must not be null or empty";
         ui = new Ui();
         storage = new Storage(filePath);
         tasks = new TaskList(storage.load());
     }
 
-    public String getWelcomeMessage() {
-        return "____________________________________________________________\n"
-                + " Hey! I'm Exactly and I'm pumped to help you out! What do you need?\n"
-                + "____________________________________________________________\n";
-    }
-
+    /**
+     * Processes a single user input and returns Exactly’s reply.
+     *
+     * @param input the raw command entered by the user
+     * @return the full formatted response including dividers
+     */
     public String getResponse(String input) {
-        assert input != null : "Input must not be null";
+        assert input != null: "Input must not be null";
         StringBuilder output = new StringBuilder();
-        output.append("____________________________________________________________\n");
+        appendHeader(output);
+
         String[] tokens = Parser.parse(input);
-        assert tokens.length > 0 : "Parser should return at least one token";
+        assert tokens.length > 0: "Parser should return at least one token";
         String command = tokens[0];
         try {
             switch (command) {
             case "bye":
-                output.append(" Bye! Keep crushing it and never settle for less!\n");
+                processBye(output);
                 break;
             case "list":
-                output.append(tasks.listTasks());
+                processList(output);
                 break;
-            case "mark": {
-                assert tokens.length > 1 : "Mark command requires a task number";
-                int idx = Integer.parseInt(tokens[1].trim());
-                if (idx < 1 || idx > tasks.size()) {
-                    output.append(" Huh? That task number doesn't exist! Check and try again!\n");
-                } else {
-                    tasks.get(idx - 1).markAsDone();
-                    output.append(" Awesome! I've marked this task as done:\n    ")
-                            .append(tasks.get(idx - 1)).append("\n");
-                }
+            case "mark":
+                processMark(tokens, output);
                 break;
-            }
-            case "unmark": {
-                assert tokens.length > 1 : "Unmark command requires a task number";
-                int idx = Integer.parseInt(tokens[1].trim());
-                if (idx < 1 || idx > tasks.size()) {
-                    output.append(" That task number is off! Check and try again!\n");
-                } else {
-                    tasks.get(idx - 1).unmark();
-                    output.append(" Got it! I've marked this task as not done yet:\n    ")
-                            .append(tasks.get(idx - 1)).append("\n");
-                }
+            case "unmark":
+                processUnmark(tokens, output);
                 break;
-            }
-            case "todo": {
-                String desc = tokens.length < 2 ? "" : tokens[1].trim();
-                if (desc.isEmpty()) {
-                    output.append(" Huh? The description for a todo task cannot be empty! Please give me a proper task!\n");
-                } else {
-                    Todo newTodo = new Todo(desc);
-                    if (tasks.getTasks().contains(newTodo)) {
-                        output.append(" Whoa! You already have this task! Won't add duplicate.\n");
-                    } else {
-                        tasks.add(newTodo);
-                        output.append(" Got it. I've added this task:\n    ")
-                                .append(tasks.get(tasks.size()-1)).append("\n")
-                                .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
-                    }
-                }
+            case "todo":
+                processTodo(tokens, output);
                 break;
-            }
-            case "deadline": {
-                String inputStr = tokens.length < 2 ? "" : tokens[1].trim();
-                String[] parts = inputStr.split(" /by ");
-                if (inputStr.isEmpty() || parts.length != 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
-                    output.append(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>\n");
-                } else {
-                    Deadline newDeadline = new Deadline(parts[0].trim(), parts[1].trim());
-                    if (tasks.getTasks().contains(newDeadline)) {
-                        output.append(" Whoa! You already have this task! Won't add duplicate.\n");
-                    } else {
-                        tasks.add(newDeadline);
-                        output.append(" Got it. I've added this task:\n    ")
-                                .append(tasks.get(tasks.size()-1)).append("\n")
-                                .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
-                    }
-                }
+            case "deadline":
+                processDeadline(tokens, output);
                 break;
-            }
-            case "event": {
-                String inputStr = tokens.length < 2 ? "" : tokens[1].trim();
-                String[] fromParts = inputStr.split(" /from ");
-                if (inputStr.isEmpty() || fromParts.length != 2 || fromParts[0].trim().isEmpty()) {
-                    output.append(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>\n");
-                } else {
-                    String descEvt = fromParts[0].trim();
-                    String[] toParts = fromParts[1].split(" /to ");
-                    if (toParts.length != 2 || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
-                        output.append(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>\n");
-                    } else {
-                        Event newEvent = new Event(descEvt, toParts[0].trim(), toParts[1].trim());
-                        if (tasks.getTasks().contains(newEvent)) {
-                            output.append(" Whoa! You already have this task! Won't add duplicate.\n");
-                        } else {
-                            tasks.add(newEvent);
-                            output.append(" Got it. I've added this task:\n    ")
-                                    .append(tasks.get(tasks.size()-1)).append("\n")
-                                    .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
-                        }
-                    }
-                }
+            case "event":
+                processEvent(tokens, output);
                 break;
-            }
-            case "delete": {
-                assert tokens.length > 1 : "Delete command requires a task number";
-                int idx = Integer.parseInt(tokens[1].trim());
-                if (idx < 1 || idx > tasks.size()) {
-                    output.append(" Whoops! That task number doesn't exist! Check and try again!\n");
-                } else {
-                    Task removed = tasks.remove(idx - 1);
-                    output.append(" Noted. I've removed this task:\n    ")
-                            .append(removed).append("\n")
-                            .append(" Now you have ").append(tasks.size()).append(" tasks in the list.\n");
-                }
+            case "delete":
+                processDelete(tokens, output);
                 break;
-            }
-            case "find": {
-                String kw = tokens.length < 2 ? "" : tokens[1].trim();
-                if (kw.isEmpty()) {
-                    output.append(" Please provide a keyword to search for.\n");
-                } else {
-                    List<Task> match = tasks.getTasks().stream()
-                            .filter(t -> t.description.contains(kw))
-                            .collect(Collectors.toList());
-                    if (match.isEmpty()) {
-                        output.append(" No matching tasks found!\n");
-                    } else {
-                        output.append(" Here are the matching tasks in your list:\n");
-                        for (int i = 0; i < match.size(); i++) {
-                            output.append(" ").append(i+1).append(". ").append(match.get(i)).append("\n");
-                        }
-                    }
-                }
+            case "find":
+                processFind(tokens, output);
                 break;
-            }
             default:
                 output.append(" Huh? I don't understand what you said!\n");
             }
         } catch (Exception e) {
             output.append(" Error: ").append(e.getMessage()).append("\n");
         }
-        output.append("____________________________________________________________\n");
+        appendFooter(output);
         storage.save(tasks.getTasks());
         return output.toString();
     }
 
+    /**
+     * Append the standard header divider to the response.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    private void appendHeader(StringBuilder sb) {
+        sb.append("____________________________________________________________\n");
+    }
+    /**
+     * Append the standard footer divider to the response.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    private void appendFooter(StringBuilder sb) {
+        sb.append("____________________________________________________________\n");
+    }
+
+    /**
+     * Handle the "bye" command by appending the exit message.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    private void processBye(StringBuilder sb) {
+        sb.append(" Bye! Keep crushing it and never settle for less!\n");
+    }
+    /**
+     * Handle the "list" command by appending the current task list.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    private void processList(StringBuilder sb) {
+        sb.append(tasks.listTasks());
+    }
+    /**
+     * Handle the "mark" command to mark a task as done.
+     *
+     * @param tokens the command tokens (["mark", "<index>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processMark(String[] tokens, StringBuilder sb) {
+        assert tokens.length > 1: "Mark command requires a task number";
+        int idx = Integer.parseInt(tokens[1].trim());
+        if (idx < 1 || idx > tasks.size()) {
+            sb.append(" Huh? That task number doesn't exist! Check and try again!\n");
+        } else {
+            tasks.get(idx - 1).markAsDone();
+            sb.append(" Awesome! I've marked this task as done:\n    ")
+                    .append(tasks.get(idx - 1)).append("\n");
+        }
+    }
+    /**
+     * Handle the "unmark" command to mark a task as not done.
+     *
+     * @param tokens the command tokens (["unmark", "<index>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processUnmark(String[] tokens, StringBuilder sb) {
+        assert tokens.length > 1: "Unmark command requires a task number";
+        int idx = Integer.parseInt(tokens[1].trim());
+        if (idx < 1 || idx > tasks.size()) {
+            sb.append(" That task number is off! Check and try again!\n");
+        } else {
+            tasks.get(idx - 1).unmark();
+            sb.append(" Got it! I've marked this task as not done yet:\n    ")
+                    .append(tasks.get(idx - 1)).append("\n");
+        }
+    }
+    /**
+     * Handle the "todo" command by creating and adding a Todo task.
+     *
+     * @param tokens the command tokens (["todo", "<description>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processTodo(String[] tokens, StringBuilder sb) {
+        String desc = tokens.length < 2 ? "" : tokens[1].trim();
+        if (desc.isEmpty()) {
+            sb.append(" Huh? The description for a todo task cannot be empty! Please give me a proper task!\n");
+        } else {
+            handleAdd(new Todo(desc), sb);
+        }
+    }
+
+    /**
+     * Handle the "deadline" command by creating and adding a Deadline task.
+     *
+     * @param tokens the command tokens (["deadline", "<desc> /by <date>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processDeadline(String[] tokens, StringBuilder sb) {
+        String inputStr = tokens.length < 2 ? "" : tokens[1].trim();
+        String[] parts = inputStr.split(" /by ");
+        if (inputStr.isEmpty() || parts.length != 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+            sb.append(" Nope - a deadline command must have a description and a '/by' time! Please use: deadline <description> /by <yyyy-MM-dd>\n");
+        } else {
+            handleAdd(new Deadline(parts[0].trim(), parts[1].trim()), sb);
+        }
+    }
+
+    /**
+     * Handle the "event" command by creating and adding an Event task.
+     *
+     * @param tokens the command tokens (["event", "<desc> /from <start> /to <end>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processEvent(String[] tokens, StringBuilder sb) {
+        String inputStr = tokens.length < 2 ? "" : tokens[1].trim();
+        String[] fromParts = inputStr.split(" /from ");
+        if (inputStr.isEmpty() || fromParts.length != 2 || fromParts[0].trim().isEmpty()) {
+            sb.append(" Nope - an event command must include a description and a start time using '/from'! Format: event <description> /from <start> /to <end>\n");
+        } else {
+            String descEvt = fromParts[0].trim();
+            String[] toParts = fromParts[1].split(" /to ");
+            if (toParts.length != 2 || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
+                sb.append(" Nope - The event command is missing '/to' or has empty times! Format: event <description> /from <start> /to <end>\n");
+            } else {
+                handleAdd(new Event(descEvt, toParts[0].trim(), toParts[1].trim()), sb);
+            }
+        }
+    }
+
+    /**
+     * Handle the "delete" command by removing a task.
+     *
+     * @param tokens the command tokens (["delete", "<index>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processDelete(String[] tokens, StringBuilder sb) {
+        assert tokens.length > 1: "Delete command requires a task number";
+        int idx = Integer.parseInt(tokens[1].trim());
+        if (idx < 1 || idx > tasks.size()) {
+            sb.append(" Whoops! That task number doesn't exist! Check and try again!\n");
+        } else {
+            Task removed = tasks.remove(idx - 1);
+            sb.append(" Noted. I've removed this task:\n    ")
+                    .append(removed).append("\n")
+                    .append(" Now you have ").append(tasks.size()).append(" tasks in the list.\n");
+        }
+    }
+
+    /**
+     * Handle the "find" command by searching for tasks matching a keyword.
+     *
+     * @param tokens the command tokens (["find", "<keyword>"])
+     * @param sb     the StringBuilder to append the result to
+     */
+    private void processFind(String[] tokens, StringBuilder sb) {
+        String kw = tokens.length < 2 ? "" : tokens[1].trim();
+        if (kw.isEmpty()) {
+            sb.append(" Please provide a keyword to search for.\n");
+        } else {
+            List < Task > match = tasks.getTasks().stream()
+                    .filter(t -> t.description.contains(kw))
+                    .collect(Collectors.toList());
+            if (match.isEmpty()) {
+                sb.append(" No matching tasks found!\n");
+            } else {
+                sb.append(" Here are the matching tasks in your list:\n");
+                for (int i = 0; i < match.size(); i++) {
+                    sb.append(" ").append(i + 1).append(". ").append(match.get(i)).append("\n");
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a new task if it is not a duplicate, and append feedback to the response.
+     *
+     * @param newTask the Task to add
+     * @param sb      the StringBuilder to append user feedback to
+     */
+    private void handleAdd(Task newTask, StringBuilder sb) {
+        if (tasks.getTasks().contains(newTask)) {
+            sb.append(" Whoa! You already have this task! Won't add duplicate.\n");
+        } else {
+            tasks.add(newTask);
+            sb.append(" Got it. I've added this task:\n    ")
+                    .append(tasks.get(tasks.size() - 1)).append("\n")
+                    .append(" Now you have ").append(tasks.size()).append(" tasks in the list!\n");
+        }
+    }
+
+    /**
+     * Start the main interaction loop:
+     * read commands from stdin, print responses to stdout,
+     * and exit when the user types "bye".
+     */
     public void run() {
         ui.showWelcome();
         boolean exit = false;
@@ -490,6 +709,11 @@ public class Exactly {
         ui.close();
     }
 
+    /**
+     * The application's entry point.
+     *
+     * @param args expects a single argument: the storage file path
+     */
     public static void main(String[] args) {
         new Exactly("data/exactly.txt").run();
     }
