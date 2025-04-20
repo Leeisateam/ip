@@ -4,73 +4,130 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX entry point for Exactly GUI.
+ */
 public class Main extends Application {
-    private Exactly chatbot = new Exactly("data/exactly.txt");
-    private ScrollPane scrollPane;
-    private VBox dialogContainer;
-    private TextField userInput;
+    private ListView<Message> chatListView;
+    private TextField inputField;
     private Button sendButton;
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
-    public void start(Stage stage) {
-        // Set up the dialog container inside a scroll pane
-        dialogContainer = new VBox();
-        scrollPane = new ScrollPane();
-        scrollPane.setContent(dialogContainer);
+    public void start(Stage primaryStage) {
+        // Chat list view with custom cell factory
+        chatListView = new ListView<>();
+        chatListView.setCellFactory(lv -> new ListCell<Message>() {
+            private final Label bubble = new Label();
+            private final HBox row = new HBox();
+            {
+                // Enable wrapping and limit bubble width to 60% of list width
+                bubble.setWrapText(true);
+                bubble.setTextAlignment(TextAlignment.LEFT);
+                HBox.setHgrow(bubble, Priority.ALWAYS);
+                bubble.maxWidthProperty().bind(lv.widthProperty().multiply(0.6));
+                row.setPadding(new Insets(4));
+                row.getChildren().add(bubble);
+            }
+            @Override
+            protected void updateItem(Message msg, boolean empty) {
+                super.updateItem(msg, empty);
+                if (empty || msg == null) {
+                    setGraphic(null);
+                } else {
+                    bubble.getStyleClass().setAll(
+                            msg.isError()    ? "error-message" :
+                                    msg.isFromUser() ? "user-message"  :
+                                            "bot-message"
+                    );
+                    row.setAlignment(msg.isFromUser() ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+                    bubble.setText(msg.getText());
+                    setGraphic(row);
+                }
+            }
+        });
 
-        // Set up user input field and send button
-        userInput = new TextField();
+        // Input field and send button
+        inputField = new TextField();
+        inputField.setPromptText("Type a command...");
         sendButton = new Button("Send");
+        sendButton.setDefaultButton(true);
 
-        // Create main layout and add all components
-        AnchorPane mainLayout = new AnchorPane();
-        mainLayout.getChildren().addAll(scrollPane, userInput, sendButton);
+        // Actions on send
+        sendButton.setOnAction(e -> sendMessage());
+        inputField.setOnAction(e -> sendMessage());
 
-        Scene scene = new Scene(mainLayout, 400, 600);
-        stage.setScene(scene);
-        stage.setTitle("Exactly Chatbot");
-        stage.show();
+        HBox inputBar = new HBox(8, inputField, sendButton);
+        inputBar.setPadding(new Insets(0, 10, 10, 10));
+        HBox.setHgrow(inputField, Priority.ALWAYS);
 
-        // Configure layout sizes and positions
-        scrollPane.setPrefSize(385, 535);
-        scrollPane.setVvalue(1.0);
-        scrollPane.setFitToWidth(true);
+        // Root layout
+        BorderPane root = new BorderPane();
+        root.setCenter(chatListView);
+        root.setBottom(inputBar);
+        BorderPane.setMargin(chatListView, new Insets(10));
 
-        userInput.setPrefWidth(320);
-        sendButton.setPrefWidth(55);
+        // Scene + CSS
+        Scene scene = new Scene(root, 600, 400);
+        scene.getStylesheets().add(getClass().getResource("/app.css").toExternalForm());
 
-        AnchorPane.setTopAnchor(scrollPane, 1.0);
-        AnchorPane.setBottomAnchor(userInput, 1.0);
-        AnchorPane.setLeftAnchor(userInput, 1.0);
-        AnchorPane.setBottomAnchor(sendButton, 1.0);
-        AnchorPane.setRightAnchor(sendButton, 1.0);
+        // Stage setup
+        primaryStage.setTitle("Exactly");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 
-        // Display the welcome message from Exactly
-        dialogContainer.getChildren().add(new Label(chatbot.getWelcomeMessage()));
+    private void sendMessage() {
+        String text = inputField.getText().trim();
+        if (text.isEmpty()) return;
+        // User message
+        chatListView.getItems().add(new Message(text, true, false));
 
-        // Set event handlers for user input
-        sendButton.setOnAction(event -> handleUserInput());
-        userInput.setOnAction(event -> handleUserInput());
+        // Bot response
+        String response;
+        boolean isError = false;
+        try {
+            response = new Exactly("data/exactly.txt").getResponse(text);
+        } catch (Exception ex) {
+            response = ex.getMessage();
+            isError = true;
+        }
+        chatListView.getItems().add(new Message(response, false, isError));
+
+        inputField.clear();
+        chatListView.scrollTo(chatListView.getItems().size() - 1);
     }
 
     /**
-     * Reads the user input, gets the response, and updates the chat dialog.
+     * Simple model for chat messages.
      */
-    private void handleUserInput() {
-        String input = userInput.getText();
-        Label userText = new Label("You: " + input);
-        dialogContainer.getChildren().add(userText);
+    public static class Message {
+        private final String text;
+        private final boolean fromUser;
+        private final boolean error;
 
-        String response = chatbot.getResponse(input);
-        Label botText = new Label("Exactly: " + response);
-        dialogContainer.getChildren().add(botText);
+        public Message(String text, boolean fromUser, boolean error) {
+            this.text = text;
+            this.fromUser = fromUser;
+            this.error = error;
+        }
 
-        userInput.clear();
+        public String getText() { return text; }
+        public boolean isFromUser() { return fromUser; }
+        public boolean isError() { return error; }
     }
 }

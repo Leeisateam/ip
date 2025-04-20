@@ -1,0 +1,36 @@
+/* overall font + background */
+.root {
+  -fx-font-family: "Segoe UI", sans-serif;
+  -fx-font-size: 14px;
+  -fx-background-color: #f5f5f5;
+}
+
+/* user bubbles: softer tint, right‑aligned */
+.user-message {
+  -fx-background-color: #D2F8D2;
+  -fx-background-radius: 12;
+  -fx-padding: 8 12;
+  -fx-text-fill: #000;
+  -fx-max-width: 60%;
+}
+
+/* bot bubbles: white on left */
+.bot-message {
+  -fx-background-color: #FFFFFF;
+  -fx-background-radius: 12;
+  -fx-padding: 8 12;
+  -fx-text-fill: #333;
+  -fx-max-width: 70%;
+}
+
+/* errors: stand out in red */
+.error-message {
+  -fx-background-color: #FFEEEE;
+  -fx-border-color: #E57373;
+  -fx-border-width: 1;
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+  -fx-text-fill: #B71C1C;
+  -fx-font-weight: bold;
+  -fx-padding: 6 10;
+}
