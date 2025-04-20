@@ -265,7 +265,7 @@ class TaskList {
     public String listTasks() {
         StringBuilder sb = new StringBuilder();
         if (tasks.isEmpty()) {
-            sb.append(" Wow, your task list is empty! Let's get started and add some awesome tasks!");
+            sb.append(" Wow, your task list is empty! Let's get started and add some awesome tasks!\n");
         } else {
             sb.append(" Here are the tasks in your list:\n");
             for (int i = 0; i < tasks.size(); i++) {
@@ -455,7 +455,16 @@ public class Exactly {
         storage = new Storage(filePath);
         tasks = new TaskList(storage.load());
     }
-
+    /**
+     * Return the welcome banner shown when the application starts.
+     *
+     * @return the welcome message including dividers and prompt
+     */
+    public String getWelcomeMessage() {
+        return "____________________________________________________________\n"
+                + " Hey! I'm Exactly and I'm pumped to help you out! What do you need?\n"
+                + "____________________________________________________________\n";
+    }
     /**
      * Processes a single user input and returns Exactly’s reply.
      *
