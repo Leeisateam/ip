@@ -28,7 +28,6 @@ Welcome to **Exactly**—a flexible task‑management chatbot you can run in the
 7. [Customization & Advanced Usage](#customization--advanced-usage)  
 8. [Troubleshooting](#troubleshooting)  
 9. [Frequently Asked Questions](#frequently-asked-questions)  
-10. [Contributing & Support](#contributing--support)
 
 ---
 
@@ -326,18 +325,4 @@ Exactly checks your input and gives clear feedback:
 **Q:** Can I run Exactly on macOS or Linux?  
 **A:** Absolutely – Java and JavaFX are cross‑platform.
 
----
-
-## Contributing & Support
-
-We welcome contributions! To help:
-
-1. Fork the repo and create a feature branch.
-2. Follow the [Java coding standards](#) and existing project structure.
-3. Add JUnit tests for any new methods.
-4. Submit a pull request with a clear description of your changes.
-
-For issues or questions, please open a GitHub issue or join our discussions forum.
-
-Thank you for choosing **Exactly**—your productivity companion!
 ```
