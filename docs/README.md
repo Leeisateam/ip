@@ -1,4 +1,3 @@
-```markdown
 # Exactly Chatbot User Guide
 
 Welcome to **Exactly**—a flexible task‑management chatbot you can run in the **CLI** or the **JavaFX GUI**. This guide covers every feature, shows complete usage examples (including error and duplicate‑detection messages), and walks you through installation, commands, customization, and troubleshooting.
