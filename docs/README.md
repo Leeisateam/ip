@@ -2,6 +2,7 @@
 
 Welcome to **Exactly**—a flexible task‑management chatbot you can run in the **CLI** or the **JavaFX GUI**. This guide covers every feature, shows complete usage examples (including error and duplicate‑detection messages), and walks you through installation, commands, customization, and troubleshooting.
 
+![Ui.png](Ui.png)
 ---
 
 ## Table of Contents
@@ -54,10 +55,6 @@ Whether you prefer typing commands or clicking buttons, Exactly adapts to your w
    - **Gradle**:
      ```bash
      ./gradlew clean build
-     ```
-   - **Maven**:
-     ```bash
-     mvn clean package
      ```
 3. **Locate the runnable JAR** at `build/libs/Exactly.jar`.
 4. **Ensure Java 17+** is installed and JAVA_HOME is set.
